@@ -3,7 +3,6 @@ import ReactDOM from "react-dom";
 import { BrowserRouter as Router } from "react-router-dom";
 import { applyMiddleware, createStore, compose } from "redux";
 import { Provider } from "react-redux";
-import { logger } from "redux-logger";
 import thunk from "redux-thunk";
 import { composeWithDevTools } from "redux-devtools-extension";
 
@@ -15,7 +14,7 @@ import "semantic-ui-css/semantic.min.css";
 const store = createStore(
   rootraducer,
   compose(
-    applyMiddleware(logger, thunk),
+    applyMiddleware( thunk),
     composeWithDevTools()
   )
 );

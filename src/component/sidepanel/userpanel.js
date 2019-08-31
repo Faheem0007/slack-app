@@ -35,22 +35,22 @@ class UserPanel extends React.Component {
               <Icon name="code" />
               <Header.Content>EwigChat</Header.Content>
             </Header>
-            <Header as="h4" inverted style={{ padding: "0.25em" }}>
-              <Dropdown
-                trigger={
-                  <span>
-                    <Image
-                      src={userReducer.user.photoURL}
-                      avatar
-                      spaced="right"
-                    />
-                    {userReducer.user.displayName}
-                  </span>
-                }
-                options={this.DropdownOptions()}
-              />
-            </Header>
           </Grid.Row>
+          <Header as="h4" inverted style={{ padding: "0.25em" }}>
+            <Dropdown
+              trigger={
+                <span>
+                  <Image
+                    src={userReducer.user.photoURL}
+                    avatar
+                    spaced="right"
+                  />
+                  {userReducer.user.displayName}
+                </span>
+              }
+              options={this.DropdownOptions()}
+            />
+          </Header>
         </Grid.Column>
       </Grid>
     );
