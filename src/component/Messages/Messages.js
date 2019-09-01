@@ -56,7 +56,7 @@ class Messages extends Component {
     return (
       messages.length > 0 &&
       messages.map((message, i) => (
-        <Message key={i} message={message} user={this.state.user} />
+        <Message key={i}message={message} user={this.state.user} />
       ))
     );
   };
