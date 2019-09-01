@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import { Menu, Icon, Modal, Form, Input, Button } from "semantic-ui-react";
 
+import { connect } from "react-redux";
+import { setCurrentChannel } from "./../../actions";
+
 import firebase from "../../firebase";
 
 class Channels extends Component {
@@ -12,17 +15,36 @@ class Channels extends Component {
       channelName: "",
       channelDetails: "",
       modal: false,
+      activeChannel: "",
+      firstLoad: true,
       channelRef: firebase.database().ref("channels")
     };
+
+    
   }
+
+  /**LifeCycle Methods */
+
+  componentWillUnmount() {
+    this.removeListner();
+  }
+
+  removeListner = () => {
+    this.state.channelRef.off();
+  };
+
+  /** model Functions */
   closeModal = () => this.setState({ modal: false });
   openModal = () => this.setState({ modal: true });
 
+  /** Change Handle Function */
   onChangeHandle = e => {
     this.setState({
       [e.target.name]: e.target.value
     });
   };
+
+  /** Submit Handle Function */
 
   onSubmit = event => {
     event.preventDefault();
@@ -34,19 +56,27 @@ class Channels extends Component {
     this.addListeners();
   }
 
+  /** Function For Loaded Data from firebase */
+
   addListeners = () => {
     let loadedChannels = [];
     this.state.channelRef.on(
       "child_added",
       snap => {
         loadedChannels.push(snap.val());
-        this.setState({ Channels: loadedChannels });
+        this.setState({ Channels: loadedChannels }, this.setFristChannel());
       },
       err => {
         console.log(err);
       }
     );
   };
+
+  /** Function For add Data in firebase */
+
+  isFormValid = ({ channelName, channelDetails }) =>
+    channelName && channelDetails;
+
   addChannel = () => {
     const { channelName, channelRef, channelDetails, user } = this.state;
 
@@ -61,7 +91,6 @@ class Channels extends Component {
         avatar: user.photoURL
       }
     };
-
     channelRef
       .child(key)
       .update(newChannel)
@@ -73,15 +102,36 @@ class Channels extends Component {
       .catch(err => console.error(err));
   };
 
+  /** Function For select default Channel */
+
+  setFristChannel = () => {
+    let firstChannel = this.state.Channels[0];
+    if (this.state.Channels.length > 0) {
+      this.props.setCurrentChannel(firstChannel);
+      this.setActiveChannel(firstChannel);
+    }
+  };
+
+  /** Function For ADD active class Channel */
+
+  setActiveChannel = channel => {
+    this.setState({
+      activeChannel: channel.id
+    });
+  };
+
+  /** Function For Display Channel */
+
   displayChannels = ({ Channels }) => {
     return (
       Channels.length > 0 &&
       Channels.map(channel => (
         <Menu.Item
           key={channel.id}
-          onClick={() => console.log(channel.name)}
+          onClick={() => this.changeChannel(channel)}
           name={channel.name}
           style={{ opacity: 0.7 }}
+          active={this.state.activeChannel === channel.id}
         >
           #{channel.name}
         </Menu.Item>
@@ -89,8 +139,11 @@ class Channels extends Component {
     );
   };
 
-  isFormValid = ({ channelName, channelDetails }) =>
-    channelName && channelDetails;
+  /**Change Channel */
+  changeChannel = channel => {
+    this.setActiveChannel(channel);
+    this.props.setCurrentChannel(channel);
+  };
 
   render() {
     const { Channels, modal } = this.state;
@@ -154,4 +207,7 @@ class Channels extends Component {
   }
 }
 
-export default Channels;
+export default connect(
+  null,
+  { setCurrentChannel }
+)(Channels);

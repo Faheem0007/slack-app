@@ -2,6 +2,8 @@ import * as actionTypes from "./types";
 
 import firebase from "../firebase";
 
+/* User actions */
+
 export const setUser = user => {
   return {
     type: actionTypes.SET_USER,
@@ -21,5 +23,16 @@ export const SignOut = () => {
   firebase.auth().signOut();
   return {
     type: actionTypes.USER_LOADING
+  };
+};
+
+/* CHANGE_CHANNEL_TYPE Actions */
+
+export const setCurrentChannel = channel => {
+  return {
+    type: actionTypes.CHANGE_CHANNEL_TYPE,
+    payload: {
+      currentChannel: channel
+    }
   };
 };
