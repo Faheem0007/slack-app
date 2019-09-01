@@ -19,8 +19,6 @@ class Channels extends Component {
       firstLoad: true,
       channelRef: firebase.database().ref("channels")
     };
-
-    
   }
 
   /**LifeCycle Methods */
@@ -140,6 +138,7 @@ class Channels extends Component {
   };
 
   /**Change Channel */
+
   changeChannel = channel => {
     this.setActiveChannel(channel);
     this.props.setCurrentChannel(channel);

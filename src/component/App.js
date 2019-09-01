@@ -39,6 +39,7 @@ class App extends React.Component {
 const mapStateToProps = state => {
   return {
     user: state,
+    channel: state.channel.currentChannel,
     isLoading: state.userReducer.loading
   };
 };

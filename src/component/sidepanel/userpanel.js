@@ -57,4 +57,4 @@ class UserPanel extends React.Component {
   }
 }
 
-export default UserPanel;
+export default React.memo(UserPanel);

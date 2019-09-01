@@ -3,8 +3,8 @@ import userReducer from "./UserReducer";
 import channel_raducer from "./ChannelReducer";
 
 const rootReducer = combineReducers({
-  userReducer: userReducer,
-  channel: channel_raducer
+  channel: channel_raducer,
+  userReducer: userReducer
 });
 
 export default rootReducer;

@@ -19,4 +19,4 @@ const Sidepanel = props => {
   );
 };
 
-export default Sidepanel;
+export default React.memo(Sidepanel);
