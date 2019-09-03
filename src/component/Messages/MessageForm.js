@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { Button, Input, Segment } from "semantic-ui-react";
 
 import firebase from "../../firebase";
+import Filemodal from "./Filemodel";
+import Progressbar from "./Progressbar";
 
 class MessageForm extends Component {
   /**constructor method for state Object */
@@ -9,11 +11,21 @@ class MessageForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      storageRef: firebase.storage().ref(),
       message: "",
       loading: true,
-      errors: []
+      errors: [],
+      model: false,
+      uploadState: "",
+      percentUpload: 0,
+      uploadTask: null
     };
   }
+
+  /**Model Functions */
+
+  openModel = () => this.setState({ model: true });
+  closeModel = () => this.setState({ model: false });
 
   /** Change Handler For get Input Value */
 
@@ -25,11 +37,10 @@ class MessageForm extends Component {
 
   /**Create Message Functions */
 
-  createMessage = () => {
+  createMessage = (fileURL = null) => {
     const { user } = this.props;
     const message = {
       timestamp: firebase.database.ServerValue.TIMESTAMP,
-      content: this.state.message,
       user: {
         id: user.uid,
         name: user.displayName,
@@ -37,6 +48,11 @@ class MessageForm extends Component {
       }
     };
 
+    if (fileURL !== null) {
+      message["image"] = fileURL;
+    } else {
+      message["content"] = this.state.message;
+    }
     return message;
   };
 
@@ -72,10 +88,79 @@ class MessageForm extends Component {
     }
   };
 
+  /**File Upload Function  */
+
+  fileUpload = (file, metaData) => {
+    const pathTo = this.props.channel.id;
+    const ref = this.props.messageRef;
+    const filePath = `chat/public/${new Date().toISOString()}.jpg`;
+
+    this.setState(
+      {
+        uploadState: "uploading",
+        uploadTask: this.state.storageRef.child(filePath).put(file, metaData)
+      },
+      () => {
+        this.state.uploadTask.on(
+          "state_changed",
+          snap => {
+            let percentUpload = Math.round(
+              (snap.bytesTransferred / snap.totalBytes) * 100
+            );
+            this.setState({
+              percentUpload
+            });
+          },
+          err => {
+            console.log(err);
+            this.setState({
+              errors: this.state.errors.concat(err),
+              uploadTask: null,
+              uploadState: "errors"
+            });
+          },
+          () => {
+            this.state.uploadTask.snapshot.ref
+              .getDownloadURL()
+              .then(downloadURL => {
+                this.sendFileMessage(downloadURL, ref, pathTo);
+              })
+              .catch(err => {
+                console.log(err);
+                this.setState({
+                  errors: this.state.errors.concat(err),
+                  uploadTask: null,
+                  uploadState: "errors"
+                });
+              });
+          }
+        );
+      }
+    );
+  };
+
+  /** sendFileMessage function for send image in message */
+
+  sendFileMessage = (downloadURL, ref, pathTo) => {
+    ref
+      .child(pathTo)
+      .push()
+      .set(this.createMessage(downloadURL))
+      .then(() => {
+        this.setState({ uploadState: "done" });
+      })
+      .catch(err => {
+        console.log(err);
+        this.setState({
+          errors: this.state.errors.concat(err)
+        });
+      });
+  };
+
   /**Render JSX */
 
   render() {
-    const { errors } = this.state;
+    const { errors, model, uploadState, percentUpload } = this.state;
     return (
       <Segment className="message__form">
         <Input
@@ -110,11 +195,18 @@ class MessageForm extends Component {
             content="Media Upload"
             icon="cloud upload"
             labelPosition="right"
+            onClick={this.openModel}
           />
         </Button.Group>
+        <Filemodal
+          model={model}
+          fileUpload={this.fileUpload}
+          closeModel={this.closeModel}
+        />       
+        <Progressbar uploadState={uploadState} percentage={percentUpload} />
       </Segment>
     );
   }
 }
 
-export default React.memo(MessageForm);
+export default MessageForm;
